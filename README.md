@@ -1,5 +1,4 @@
-# GmSSL
-
-Please visit http://gmssl.org for documents and more details.
+this project is based on openssl
+I will change this to suit the vpn
 
 # myssl
