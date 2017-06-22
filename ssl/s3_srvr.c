@@ -1600,6 +1600,8 @@ int ssl3_send_server_key_exchange(SSL *s)
     DH *dh = NULL, *dhp;
 #endif
 #ifndef OPENSSL_NO_ECDH
+	//准备测试是否发送了ECDH的参数
+	printf("this is ECDH!!!");
     EC_KEY *ecdh = NULL, *ecdhp;
     unsigned char *encodedPoint = NULL;
     int encodedlen = 0;
@@ -1706,6 +1708,7 @@ int ssl3_send_server_key_exchange(SSL *s)
 #endif
 #ifndef OPENSSL_NO_ECDH
         if (type & SSL_kEECDH) {
+			printf("to do ecdh exchange!!!!!!");
             const EC_GROUP *group;
 
             ecdhp = cert->ecdh_tmp;
@@ -1811,7 +1814,7 @@ int ssl3_send_server_key_exchange(SSL *s)
                 SSLerr(SSL_F_SSL3_SEND_SERVER_KEY_EXCHANGE, ERR_R_ECDH_LIB);
                 goto err;
             }
-
+			printf("succee to the ecdh exchange!!!");
             BN_CTX_free(bn_ctx);
             bn_ctx = NULL;
 
