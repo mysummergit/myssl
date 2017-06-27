@@ -1877,15 +1877,19 @@ int ssl3_send_server_key_exchange(SSL *s)
 
         if (!(s->s3->tmp.new_cipher->algorithm_auth & (SSL_aNULL | SSL_aSRP))
             && !(s->s3->tmp.new_cipher->algorithm_mkey & SSL_kPSK)) {
+            printf("ahead ssl_get_sign_pkey\n");
             if ((pkey = ssl_get_sign_pkey(s, s->s3->tmp.new_cipher, &md))
                 == NULL) {
                 //此处取得server端的私钥可能性极大，用于签名
-                printf("ssl_get_sign_pkey\n");
+                printf("in ssl_get_sign_pkey\n");
                 al = SSL_AD_DECODE_ERROR;
                 goto f_err;
             }
+			printf("behind ssl_get_sign_pkey\n");
             kn = EVP_PKEY_size(pkey);
+			printf("kkkkkkknnnnnnn is %d\n",kn);
         } else {
+			printf("pkey is null");
             pkey = NULL;
             kn = 0;
         }
