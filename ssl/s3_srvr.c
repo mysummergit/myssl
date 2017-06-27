@@ -2127,6 +2127,8 @@ int ssl3_send_certificate_request(SSL *s)
 
 int ssl3_get_client_key_exchange(SSL *s)
 {
+	printf("ssl3_get_client_key_exchange\n");
+	
     int i, al, ok;
     long n;
     unsigned long alg_k;
