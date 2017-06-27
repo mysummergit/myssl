@@ -313,6 +313,7 @@ int do_server(int port, int type, int *ret,
         if (type == SOCK_STREAM) {
 			printf("in if in if \n");
             if (do_accept(accept_socket, &sock, &name) == 0) {
+				printf("in if do_accept if accept");
                 SHUTDOWN(accept_socket);
                 return (0);
             }
@@ -397,12 +398,13 @@ static int init_server(int *sock, int port, int type)
 
 static int do_accept(int acc_sock, int *sock, char **host)
 {
+	printf("this is do accept\n");
     int ret;
     struct hostent *h1, *h2;
     static struct sockaddr_in from;
     int len;
 /*      struct linger ling; */
-
+    printf("ahead ssl_sock_init\n");
     if (!ssl_sock_init())
         return (0);
 
@@ -458,10 +460,11 @@ static int do_accept(int acc_sock, int *sock, char **host)
                        sizeof(struct in_addr), AF_INET);
 # endif
     if (h1 == NULL) {
-        BIO_printf(bio_err, "bad gethostbyaddr\n");
+        BIO_printf(bio_err, "bad gethostbyaddr (this is write by dz)\n");
         *host = NULL;
         /* return(0); */
     } else {
+        printf("in bad gethostbyaddr else else\n");
         if ((*host = (char *)OPENSSL_malloc(strlen(h1->h_name) + 1)) == NULL) {
             perror("OPENSSL_malloc");
             closesocket(ret);
@@ -481,6 +484,7 @@ static int do_accept(int acc_sock, int *sock, char **host)
             return (0);
         }
     }
+	printf("end of socket\n");
  end:
     *sock = ret;
     return (1);
