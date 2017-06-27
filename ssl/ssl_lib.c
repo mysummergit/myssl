@@ -2560,6 +2560,7 @@ CERT_PKEY *ssl_get_server_send_pkey(const SSL *s)
 EVP_PKEY *ssl_get_sign_pkey(SSL *s, const SSL_CIPHER *cipher,
                             const EVP_MD **pmd)
 {
+	printf("this is ssl_get_sign_pkey\n");
     unsigned long alg_a;
     CERT *c;
     int idx = -1;

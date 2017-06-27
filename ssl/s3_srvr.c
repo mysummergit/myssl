@@ -1874,10 +1874,17 @@ int ssl3_send_server_key_exchange(SSL *s)
 #endif
                 n += 2 + nr[i];
         }
-
+		if(pkey==NULL)
+			printf("mypkey is null\n");
+		else
+			printf("mypkey not null\n");
         if (!(s->s3->tmp.new_cipher->algorithm_auth & (SSL_aNULL | SSL_aSRP))
             && !(s->s3->tmp.new_cipher->algorithm_mkey & SSL_kPSK)) {
             printf("ahead ssl_get_sign_pkey\n");
+			if(pkey==NULL)
+			printf("mypkey is null222\n");
+			else
+			printf("mypkey not null222\n");
             if ((pkey = ssl_get_sign_pkey(s, s->s3->tmp.new_cipher, &md))
                 == NULL) {
                 //此处取得server端的私钥可能性极大，用于签名
