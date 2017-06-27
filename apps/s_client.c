@@ -654,6 +654,7 @@ int MAIN(int, char **);
 
 int MAIN(int argc, char **argv)
 {
+	printf("test s_clinet");
     int build_chain = 0;
     SSL *con = NULL;
 #ifndef OPENSSL_NO_KRB5
@@ -1142,7 +1143,7 @@ int MAIN(int argc, char **argv)
         psk_identity = "JPAKE";
     }
 #endif
-
+    printf("OpenSSL_add_ssl_algorithms\n");
     OpenSSL_add_ssl_algorithms();
     SSL_load_error_strings();
 
@@ -1481,7 +1482,7 @@ int MAIN(int argc, char **argv)
             BIO_ctrl(sbio, BIO_CTRL_DGRAM_MTU_DISCOVER, 0, NULL);
     } else
         sbio = BIO_new_socket(s, BIO_NOCLOSE);
-
+    printf("BIO_new_socket\n");
     if (nbio_test) {
         BIO *test;
 
