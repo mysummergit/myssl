@@ -1596,7 +1596,7 @@ int MAIN(int argc, char *argv[])
 
     if (!load_excert(&exc, bio_err))
         goto end;
-
+//加载私钥和证书
     if (nocert == 0) {
         s_key = load_key(bio_err, s_key_file, s_key_format, 0, pass, e,
                          "server certificate private key file");
@@ -2047,6 +2047,7 @@ int MAIN(int argc, char *argv[])
     else
         do_server(port, socket_type, &accept_socket, sv_body, context,
                   naccept);
+	printf("this is ahead print_stats\n");
     print_stats(bio_s_out, ctx);
     ret = 0;
  end:

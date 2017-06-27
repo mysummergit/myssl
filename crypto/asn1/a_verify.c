@@ -54,6 +54,7 @@
  * derivative of this code cannot be changed.  i.e. this code cannot simply be
  * copied and put under another distribution licence
  * [including the GNU Public Licence.]
+ * 加入计算Z值，如果没有Z值，对于标准证书验证会出现问题
  */
 
 #include <stdio.h>

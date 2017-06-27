@@ -294,6 +294,7 @@ int do_server(int port, int type, int *ret,
                          unsigned char *context), unsigned char *context,
               int naccept)
 {
+    printf("this is do server");
     int sock;
     char *name = NULL;
     int accept_socket = 0;
