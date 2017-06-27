@@ -1879,6 +1879,8 @@ int ssl3_send_server_key_exchange(SSL *s)
             && !(s->s3->tmp.new_cipher->algorithm_mkey & SSL_kPSK)) {
             if ((pkey = ssl_get_sign_pkey(s, s->s3->tmp.new_cipher, &md))
                 == NULL) {
+                //此处取得server端的私钥可能性极大，用于签名
+                printf("ssl_get_sign_pkey\n");
                 al = SSL_AD_DECODE_ERROR;
                 goto f_err;
             }
@@ -1997,6 +1999,7 @@ int ssl3_send_server_key_exchange(SSL *s)
                 EVP_SignUpdate(&md_ctx, d, n);
                 if (!EVP_SignFinal(&md_ctx, &(p[2]),
                                    (unsigned int *)&i, pkey)) {
+                    //在发送server exchange消息的时候需要服务器私钥签名，可能就是在此处的pkey进行的签名，要改双证书本处重要
                     SSLerr(SSL_F_SSL3_SEND_SERVER_KEY_EXCHANGE, ERR_LIB_EVP);
                     goto err;
                 }
