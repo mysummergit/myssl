@@ -190,7 +190,7 @@ int MS_CALLBACK verify_callback(int ok, X509_STORE_CTX *ctx)
     if (err == X509_V_OK && ok == 2 && !verify_quiet)
         policies_print(bio_err, ctx);
     if (ok && !verify_quiet)
-        BIO_printf(bio_err, "verify return:%d\n", ok);
+        BIO_printf(bio_err, "cbdz verify return:%d\n", ok);
     return (ok);
 }
 
