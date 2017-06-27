@@ -258,6 +258,6 @@ int verify_callback(int ok, X509_STORE_CTX *ctx)
 		BIO_printf(bio_err,"\n");
 		break;
 		}
-	BIO_printf(bio_err,"verify return:%d\n",ok);
+	BIO_printf(bio_err,"dz verify return:%d\n",ok);
 	return(ok);
 	}
