@@ -211,25 +211,30 @@ static int ssl_check_srp_ext_ClientHello(SSL *s, int *al)
 
 int ssl3_accept(SSL *s)
 {
+	//SSL_accept()函数完成SSL协商的服务器端操作
     BUF_MEM *buf;
     unsigned long alg_k, Time = (unsigned long)time(NULL);
     void (*cb) (const SSL *ssl, int type, int val) = NULL;
     int ret = -1;
     int new_state, state, skip = 0;
 
-    RAND_add(&Time, sizeof(Time), 0);
+    RAND_add(&Time, sizeof(Time), 0);// 用当前时间作为随机种子
     ERR_clear_error();
     clear_sys_error();
-
+	
+	// 在SSL_new()函数中，s->info_callback并没有定义
+	// 是通过SSL_set_info_callback()函数单独定义的
     if (s->info_callback != NULL)
         cb = s->info_callback;
     else if (s->ctx->info_callback != NULL)
         cb = s->ctx->info_callback;
-
+	
+	// SSL_CTX_new()函数中，ctx->info_callback也没定义
+	// 是通过SSL_CTX_set_info_callback()宏单独定义的
     /* init things to blank */
-    s->in_handshake++;
+    s->in_handshake++;// 握手计数
     if (!SSL_in_init(s) || SSL_in_before(s))
-        SSL_clear(s);
+        SSL_clear(s);// 如果SSL已用，清除SSL原来的值
 
     if (s->cert == NULL) {
         SSLerr(SSL_F_SSL3_ACCEPT, SSL_R_NO_CERTIFICATE_SET);
@@ -248,7 +253,7 @@ int ssl3_accept(SSL *s)
 #endif
 
     for (;;) {
-        state = s->state;
+        state = s->state;// 保存SSL当前状态
 
         switch (s->state) {
         case SSL_ST_RENEGOTIATE:
@@ -272,6 +277,7 @@ int ssl3_accept(SSL *s)
             s->type = SSL_ST_ACCEPT;
 
             if (s->init_buf == NULL) {
+				// 生成一个SSL缓冲区
                 if ((buf = BUF_MEM_new()) == NULL) {
                     ret = -1;
                     s->state = SSL_ST_ERR;
@@ -311,9 +317,9 @@ int ssl3_accept(SSL *s)
                     goto end;
                 }
 
-                ssl3_init_finished_mac(s);
-                s->state = SSL3_ST_SR_CLNT_HELLO_A;
-                s->ctx->stats.sess_accept++;
+                ssl3_init_finished_mac(s);// 初始化认证码MAC
+                s->state = SSL3_ST_SR_CLNT_HELLO_A;// SSL状态设置为SSL23_ST_SR_CLNT_HELLO_A,进入客户端的HELLO A状态
+                s->ctx->stats.sess_accept++;// 接受的SSL会话统计
             } else if (!s->s3->send_connection_binding &&
                        !(s->options &
                          SSL_OP_ALLOW_UNSAFE_LEGACY_RENEGOTIATION)) {
@@ -340,15 +346,15 @@ int ssl3_accept(SSL *s)
         case SSL3_ST_SW_HELLO_REQ_A:
         case SSL3_ST_SW_HELLO_REQ_B:
 
-            s->shutdown = 0;
-            ret = ssl3_send_hello_request(s);
+            s->shutdown = 0;// 此状态是是写服务器端的回应的HELLO请求信息
+            ret = ssl3_send_hello_request(s);// 发送服务器端的HELLO
             if (ret <= 0)
                 goto end;
-            s->s3->tmp.next_state = SSL3_ST_SW_HELLO_REQ_C;
+            s->s3->tmp.next_state = SSL3_ST_SW_HELLO_REQ_C;// 转入REQ_C状态
             s->state = SSL3_ST_SW_FLUSH;
             s->init_num = 0;
 
-            ssl3_init_finished_mac(s);
+            ssl3_init_finished_mac(s);// 从ssl23_accept过来时的状态是SSL3_ST_SR_CLNT_HELLO_A,属于读数据状态
             break;
 
         case SSL3_ST_SW_HELLO_REQ_C:
@@ -360,7 +366,7 @@ int ssl3_accept(SSL *s)
         case SSL3_ST_SR_CLNT_HELLO_C:
 
             s->shutdown = 0;
-            ret = ssl3_get_client_hello(s);
+            ret = ssl3_get_client_hello(s);// 获取对方的HELLO信息,也就是进行SSL握手协议
             if (ret <= 0)
                 goto end;
 #ifndef OPENSSL_NO_SRP
@@ -398,7 +404,7 @@ int ssl3_accept(SSL *s)
 
         case SSL3_ST_SW_SRVR_HELLO_A:
         case SSL3_ST_SW_SRVR_HELLO_B:
-            ret = ssl3_send_server_hello(s);
+            ret = ssl3_send_server_hello(s);// 此状态是是写服务器端的HELLO信息
             if (ret <= 0)
                 goto end;
 #ifndef OPENSSL_NO_TLSEXT
@@ -413,7 +419,7 @@ int ssl3_accept(SSL *s)
                 s->state = SSL3_ST_SW_CHANGE_A;
 #endif
             else
-                s->state = SSL3_ST_SW_CERT_A;
+                s->state = SSL3_ST_SW_CERT_A;// 否则为新SSL会话,进入证书处理A状态// 该状态下进行证书交换,用来计算连接共享密钥
             s->init_num = 0;
             break;
 
@@ -426,17 +432,17 @@ int ssl3_accept(SSL *s)
                  new_cipher->algorithm_auth & (SSL_aNULL | SSL_aKRB5 |
                                                SSL_aSRP))
 && !(s->s3->tmp.new_cipher->algorithm_mkey & SSL_kPSK)) {
-                ret = ssl3_send_server_certificate(s);
+                ret = ssl3_send_server_certificate(s);// 非NULL加密的话发送服务器端的证书
                 if (ret <= 0)
                     goto end;
 #ifndef OPENSSL_NO_TLSEXT
                 if (s->tlsext_status_expected)
                     s->state = SSL3_ST_SW_CERT_STATUS_A;
                 else
-                    s->state = SSL3_ST_SW_KEY_EXCH_A;
+                    s->state = SSL3_ST_SW_KEY_EXCH_A;// 进入密钥交换状态
             } else {
                 skip = 1;
-                s->state = SSL3_ST_SW_KEY_EXCH_A;
+                s->state = SSL3_ST_SW_KEY_EXCH_A;// 进入密钥交换状态
             }
 #else
             } else
@@ -449,7 +455,7 @@ int ssl3_accept(SSL *s)
 
         case SSL3_ST_SW_KEY_EXCH_A:
         case SSL3_ST_SW_KEY_EXCH_B:
-            alg_k = s->s3->tmp.new_cipher->algorithm_mkey;
+            alg_k = s->s3->tmp.new_cipher->algorithm_mkey;// 该状态下进行数据加密密钥的交换操作
 
             /*
              * clear this, it may get reset by
@@ -1874,29 +1880,18 @@ int ssl3_send_server_key_exchange(SSL *s)
 #endif
                 n += 2 + nr[i];
         }
-		if(pkey==NULL)
-			printf("mypkey is null\n");
-		else
-			printf("mypkey not null\n");
         if (!(s->s3->tmp.new_cipher->algorithm_auth & (SSL_aNULL | SSL_aSRP))
             && !(s->s3->tmp.new_cipher->algorithm_mkey & SSL_kPSK)) {
-            printf("ahead ssl_get_sign_pkey\n");
-			if(pkey==NULL)
-			printf("mypkey is null222\n");
-			else
-			printf("mypkey not null222\n");
             if ((pkey = ssl_get_sign_pkey(s, s->s3->tmp.new_cipher, &md))
                 == NULL) {
-                //此处取得server端的私钥可能性极大，用于签名
+                //此处取得server端的私钥，函数ssl_get_sign_pkey，用于签名
                 printf("in ssl_get_sign_pkey\n");
                 al = SSL_AD_DECODE_ERROR;
                 goto f_err;
             }
-			printf("behind ssl_get_sign_pkey\n");
             kn = EVP_PKEY_size(pkey);
 			printf("kkkkkkknnnnnnn is %d\n",kn);
         } else {
-			printf("pkey is null");
             pkey = NULL;
             kn = 0;
         }
