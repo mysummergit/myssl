@@ -2037,16 +2037,28 @@ int MAIN(int argc, char *argv[])
     }
 
     BIO_printf(bio_s_out, "ACCEPT server myclient\n");
+	printf("111BIO_flushBIO_flushBIO_flushBIO_flush\n");
     (void)BIO_flush(bio_s_out);
+	printf("222BIO_flushBIO_flushBIO_flushBIO_flush\n");
     if (rev)
+    	{
+    	printf("revrevrevrevrevervrevrev\n");
         do_server(port, socket_type, &accept_socket, rev_body, context,
                   naccept);
+    	}
     else if (www)
+    	{
+    	printf("wwwwwwwwwwwwwwwwwwwwwwwww\n");
         do_server(port, socket_type, &accept_socket, www_body, context,
                   naccept);
+    	}
     else
+    	{
+    	printf("sssssssssssssssvvvvvvvvvvv\n");
         do_server(port, socket_type, &accept_socket, sv_body, context,
                   naccept);
+    	}
+	printf("this is ahead print_stats\n");
     print_stats(bio_s_out, ctx);
 	printf("this is behind print_stats\n");
     ret = 0;
