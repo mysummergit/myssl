@@ -2036,7 +2036,7 @@ int MAIN(int argc, char *argv[])
 #endif
     }
 
-    BIO_printf(bio_s_out, "ACCEPT\n");
+    BIO_printf(bio_s_out, "ACCEPT server myclient\n");
     (void)BIO_flush(bio_s_out);
     if (rev)
         do_server(port, socket_type, &accept_socket, rev_body, context,
