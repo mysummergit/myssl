@@ -294,27 +294,34 @@ int do_server(int port, int type, int *ret,
                          unsigned char *context), unsigned char *context,
               int naccept)
 {
-    printf("this is do server");
+    printf("this is do server\n");
     int sock;
     char *name = NULL;
     int accept_socket = 0;
     int i;
-
+    printf("init_server init_server\n");
     if (!init_server(&accept_socket, port, type))
         return (0);
-
+    printf("ahead accept_socket\n");
     if (ret != NULL) {
         *ret = accept_socket;
         /* return(1); */
     }
+	printf("ahead do_accept\n");
     for (;;) {
+		printf("do_accept do_accept\n");
         if (type == SOCK_STREAM) {
+			printf("in if in if \n");
             if (do_accept(accept_socket, &sock, &name) == 0) {
                 SHUTDOWN(accept_socket);
                 return (0);
             }
         } else
+            {
+            printf("in else in else\n");
             sock = accept_socket;
+            	}
+		printf("use cccccccccbbbbbbbbbbb");
         i = (*cb) (name, sock, type, context);
         if (name != NULL)
             OPENSSL_free(name);
@@ -323,6 +330,7 @@ int do_server(int port, int type, int *ret,
         if (naccept != -1)
             naccept--;
         if (i < 0 || naccept == 0) {
+			printf("i<<<<<<<<000000");
             SHUTDOWN2(accept_socket);
             return (i);
         }
