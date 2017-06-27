@@ -2047,8 +2047,8 @@ int MAIN(int argc, char *argv[])
     else
         do_server(port, socket_type, &accept_socket, sv_body, context,
                   naccept);
-	printf("this is ahead print_stats\n");
     print_stats(bio_s_out, ctx);
+	printf("this is behind print_stats\n");
     ret = 0;
  end:
     if (ctx != NULL)
