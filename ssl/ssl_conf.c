@@ -364,6 +364,7 @@ static int cmd_Options(SSL_CONF_CTX *cctx, const char *value)
 
 static int cmd_Certificate(SSL_CONF_CTX *cctx, const char *value)
 {
+	printf("cmd_Certificatecmd_Certificate\n");
     int rv = 1;
     if (!(cctx->flags & SSL_CONF_FLAG_CERTIFICATE))
         return -2;
@@ -376,6 +377,7 @@ static int cmd_Certificate(SSL_CONF_CTX *cctx, const char *value)
 
 static int cmd_PrivateKey(SSL_CONF_CTX *cctx, const char *value)
 {
+	printf("cmd_PrivateKeycmd_PrivateKey\n");
     int rv = 1;
     if (!(cctx->flags & SSL_CONF_FLAG_CERTIFICATE))
         return -2;
