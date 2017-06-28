@@ -1598,6 +1598,7 @@ int MAIN(int argc, char *argv[])
         goto end;
 //加载私钥和证书
     if (nocert == 0) {
+		printf("load_ley in s_server\n");
         s_key = load_key(bio_err, s_key_file, s_key_format, 0, pass, e,
                          "server certificate private key file");
         if (!s_key) {
@@ -1607,7 +1608,7 @@ int MAIN(int argc, char *argv[])
 
         s_cert = load_cert(bio_err, s_cert_file, s_cert_format,
                            NULL, e, "server certificate file");
-
+		printf("load cer in s_server\n");
         if (!s_cert) {
             ERR_print_errors(bio_err);
             goto end;
