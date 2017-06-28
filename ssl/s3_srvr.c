@@ -459,7 +459,7 @@ int ssl3_accept(SSL *s)
 
             /*
              * clear this, it may get reset by
-             * send_server_key_exchange
+             * send_server_key_exchange//发送server_key_exchange
              */
             s->s3->tmp.use_rsa_tmp = 0;
 
@@ -495,19 +495,19 @@ int ssl3_accept(SSL *s)
                     )
                 )
                 ) {
-                ret = ssl3_send_server_key_exchange(s);
+                ret = ssl3_send_server_key_exchange(s);//发送server_key_exchange进行密钥交换
                 if (ret <= 0)
                     goto end;
             } else
                 skip = 1;
 
-            s->state = SSL3_ST_SW_CERT_REQ_A;
+            s->state = SSL3_ST_SW_CERT_REQ_A;// 转入证书请求阶段
             s->init_num = 0;
             break;
 
         case SSL3_ST_SW_CERT_REQ_A:
         case SSL3_ST_SW_CERT_REQ_B:
-            if (                /* don't request cert unless asked for it: */
+            if (                /*此阶段进入对方证书请求 don't request cert unless asked for it: */
                    !(s->verify_mode & SSL_VERIFY_PEER) ||
                    /*
                     * if SSL_VERIFY_CLIENT_ONCE is set, don't request cert
@@ -539,9 +539,13 @@ int ssl3_accept(SSL *s)
                     */
                    || (s->s3->tmp.new_cipher->algorithm_mkey & SSL_kPSK)) {
                 /* no cert request */
+				// 在大多数情况下不需要客户端的证书
+				// 如果想认证对方,只要以上条件之一不满足就可以认证对方
+				// CTX的verify_mode则通过SSL_CTX_set_verify()来修改
+				// s->verify_mode的初始值是ctx->verify_mode赋予的
                 skip = 1;
                 s->s3->tmp.cert_request = 0;
-                s->state = SSL3_ST_SW_SRVR_DONE_A;
+                s->state = SSL3_ST_SW_SRVR_DONE_A;// 服务器端协商发送结束
                 if (s->s3->handshake_buffer) {
                     if (!ssl3_digest_cached_records(s)) {
                         s->state = SSL_ST_ERR;
@@ -550,14 +554,14 @@ int ssl3_accept(SSL *s)
                 }
             } else {
                 s->s3->tmp.cert_request = 1;
-                ret = ssl3_send_certificate_request(s);
+                ret = ssl3_send_certificate_request(s);// 发送要获取对方证书的请求
                 if (ret <= 0)
                     goto end;
 #ifndef NETSCAPE_HANG_BUG
-                s->state = SSL3_ST_SW_SRVR_DONE_A;
+                s->state = SSL3_ST_SW_SRVR_DONE_A;// 没预定义HANG_BUG的话服务器端协商写数据应该完成了
 #else
                 s->state = SSL3_ST_SW_FLUSH;
-                s->s3->tmp.next_state = SSL3_ST_SR_CERT_A;
+                s->s3->tmp.next_state = SSL3_ST_SR_CERT_A;// 否则进入清除写缓冲状态, 下一个状态是准备接收证书A
 #endif
                 s->init_num = 0;
             }
@@ -565,11 +569,11 @@ int ssl3_accept(SSL *s)
 
         case SSL3_ST_SW_SRVR_DONE_A:
         case SSL3_ST_SW_SRVR_DONE_B:
-            ret = ssl3_send_server_done(s);
+            ret = ssl3_send_server_done(s);// 发送服务器协商数据完成信息
             if (ret <= 0)
                 goto end;
-            s->s3->tmp.next_state = SSL3_ST_SR_CERT_A;
-            s->state = SSL3_ST_SW_FLUSH;
+            s->s3->tmp.next_state = SSL3_ST_SR_CERT_A;// 下一个状态将是接收证书A状态
+            s->state = SSL3_ST_SW_FLUSH;// 转入写缓冲清除状态
             s->init_num = 0;
             break;
 
@@ -586,7 +590,7 @@ int ssl3_accept(SSL *s)
 
             s->rwstate = SSL_WRITING;
             if (BIO_flush(s->wbio) <= 0) {
-                ret = -1;
+                ret = -1;// 清除写缓冲区
                 goto end;
             }
             s->rwstate = SSL_NOTHING;
@@ -597,17 +601,17 @@ int ssl3_accept(SSL *s)
         case SSL3_ST_SR_CERT_A:
         case SSL3_ST_SR_CERT_B:
             if (s->s3->tmp.cert_request) {
-                ret = ssl3_get_client_certificate(s);
+                ret = ssl3_get_client_certificate(s);// 获取对方证书
                 if (ret <= 0)
                     goto end;
             }
             s->init_num = 0;
-            s->state = SSL3_ST_SR_KEY_EXCH_A;
+            s->state = SSL3_ST_SR_KEY_EXCH_A;// 准备进入密钥交换状态
             break;
 
         case SSL3_ST_SR_KEY_EXCH_A:
         case SSL3_ST_SR_KEY_EXCH_B:
-            ret = ssl3_get_client_key_exchange(s);
+            ret = ssl3_get_client_key_exchange(s);// 该状态处理密钥交换
             if (ret <= 0)
                 goto end;
             if (ret == 2) {
@@ -627,7 +631,7 @@ int ssl3_accept(SSL *s)
 #endif
                 s->init_num = 0;
             } else if (SSL_USE_SIGALGS(s)) {
-                s->state = SSL3_ST_SR_CERT_VRFY_A;
+                s->state = SSL3_ST_SR_CERT_VRFY_A;// 准备进入证书验证状态
                 s->init_num = 0;
                 if (!s->session->peer)
                     break;
@@ -649,7 +653,7 @@ int ssl3_accept(SSL *s)
                 int offset = 0;
                 int dgst_num;
 
-                s->state = SSL3_ST_SR_CERT_VRFY_A;
+                s->state = SSL3_ST_SR_CERT_VRFY_A;// 准备进入证书验证状态
                 s->init_num = 0;
 
                 /*
@@ -667,7 +671,7 @@ int ssl3_accept(SSL *s)
                 for (dgst_num = 0; dgst_num < SSL_MAX_DIGEST; dgst_num++)
                     if (s->s3->handshake_dgst[dgst_num]) {
                         int dgst_size;
-
+						// 验证证书的MAC码
                         s->method->ssl3_enc->cert_verify_mac(s,
                                                              EVP_MD_CTX_type
                                                              (s->
@@ -690,7 +694,7 @@ int ssl3_accept(SSL *s)
 
         case SSL3_ST_SR_CERT_VRFY_A:
         case SSL3_ST_SR_CERT_VRFY_B:
-            ret = ssl3_get_cert_verify(s);
+            ret = ssl3_get_cert_verify(s);// 验证证书
             if (ret <= 0)
                 goto end;
 
@@ -700,7 +704,7 @@ int ssl3_accept(SSL *s)
             if (s->s3->next_proto_neg_seen)
                 s->state = SSL3_ST_SR_NEXT_PROTO_A;
             else
-                s->state = SSL3_ST_SR_FINISHED_A;
+                s->state = SSL3_ST_SR_FINISHED_A;// 状态转为接收结束A状态
 #endif
             s->init_num = 0;
             break;
@@ -737,6 +741,7 @@ int ssl3_accept(SSL *s)
              * s->s3->change_cipher_spec is set when a CCS is
              * processed in s3_pkt.c, and remains set until
              * the client's Finished message is read.
+             * 本状态为服务器端接收结束
              */
             if (!s->s3->change_cipher_spec)
                 s->s3->flags |= SSL3_FLAGS_CCS_OK;
@@ -745,13 +750,13 @@ int ssl3_accept(SSL *s)
             if (ret <= 0)
                 goto end;
             if (s->hit)
-                s->state = SSL_ST_OK;
+                s->state = SSL_ST_OK;// 如果会话是reuse的, 连接已经建立
 #ifndef OPENSSL_NO_TLSEXT
             else if (s->tlsext_ticket_expected)
                 s->state = SSL3_ST_SW_SESSION_TICKET_A;
 #endif
             else
-                s->state = SSL3_ST_SW_CHANGE_A;
+                s->state = SSL3_ST_SW_CHANGE_A;// 转CHANGE_A
             s->init_num = 0;
             break;
 
@@ -785,14 +790,14 @@ int ssl3_accept(SSL *s)
                 s->state = SSL_ST_ERR;
                 goto end;
             }
-
+			// 本状态为服务器发送修改信息,发送修改加密算法信息
             ret = ssl3_send_change_cipher_spec(s,
                                                SSL3_ST_SW_CHANGE_A,
                                                SSL3_ST_SW_CHANGE_B);
 
             if (ret <= 0)
                 goto end;
-            s->state = SSL3_ST_SW_FINISHED_A;
+            s->state = SSL3_ST_SW_FINISHED_A;// 转发送结束
             s->init_num = 0;
 
             if (!s->method->ssl3_enc->change_cipher_state(s,
@@ -816,7 +821,7 @@ int ssl3_accept(SSL *s)
                                      ssl3_enc->server_finished_label_len);
             if (ret <= 0)
                 goto end;
-            s->state = SSL3_ST_SW_FLUSH;
+            s->state = SSL3_ST_SW_FLUSH;// 服务器发送结束,SSL握手完成
             if (s->hit) {
 #if defined(OPENSSL_NO_TLSEXT) || defined(OPENSSL_NO_NEXTPROTONEG)
                 s->s3->tmp.next_state = SSL3_ST_SR_FINISHED_A;

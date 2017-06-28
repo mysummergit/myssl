@@ -82,6 +82,7 @@ int SSL_use_certificate(SSL *ssl, X509 *x)
 #ifndef OPENSSL_NO_STDIO
 int SSL_use_certificate_file(SSL *ssl, const char *file, int type)
 {
+	printf("this is SSL_use_certificate_file,i will use this to load cer\n\n");
     int j;
     BIO *in;
     int ret = 0;
