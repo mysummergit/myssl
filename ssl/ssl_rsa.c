@@ -601,6 +601,7 @@ int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey)
 #ifndef OPENSSL_NO_STDIO
 int SSL_CTX_use_PrivateKey_file(SSL_CTX *ctx, const char *file, int type)
 {
+	printf("SSL_CTX_use_PrivateKey_fileSSL_CTX_use_PrivateKey_file\n");
     int j, ret = 0;
     BIO *in;
     EVP_PKEY *pkey = NULL;
@@ -666,6 +667,7 @@ int SSL_CTX_use_PrivateKey_ASN1(int type, SSL_CTX *ctx,
  */
 int SSL_CTX_use_certificate_chain_file(SSL_CTX *ctx, const char *file)
 {
+	printf("SSL_CTX_use_certificate_chain_fileSSL_CTX_use_certificate_chain_file\n");
     BIO *in;
     int ret = 0;
     X509 *x = NULL;
